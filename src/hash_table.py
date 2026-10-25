@@ -1,14 +1,16 @@
 
 class CustomHashTable:
-    def __init__(self, size=10):
-        self.size = size
-        self.table = [[] for _ in range(size)]
+    def __init__(self, size=1024):
+        self.size = max(1, size)
+        self.table = [[] for _ in range(self.size)]
         self.count = 0
 
     def _hash(self, key):
         return hash(key) % self.size
 
     def insert(self, key, value):
+        if (self.count + 1) / self.size > 0.75:
+            self._resize(self.size * 2)
         index = self._hash(key)
 
         # If the key already exists, add another value
@@ -20,6 +22,14 @@ class CustomHashTable:
         # Otherwise, store a new key-value pair
         self.table[index].append([key, [value]])
         self.count += 1
+
+    def _resize(self, new_size):
+        old_entries = [item for bucket in self.table for item in bucket]
+        self.size = new_size
+        self.table = [[] for _ in range(self.size)]
+        for key, values in old_entries:
+            self.table[self._hash(key)].append([key, values])
+        self.count = len(old_entries)
 
     def search(self, key):
         index = self._hash(key)
